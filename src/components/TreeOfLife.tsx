@@ -2,74 +2,107 @@ import { useState } from 'react';
 import { SEFIROT, PATHS, type Sefirah } from '../data/sefirot';
 import SefirahDetail from './SefirahDetail';
 
+const DAAT = { x: 250, y: 228 };
+
 export default function TreeOfLife() {
   const [selected, setSelected] = useState<Sefirah | null>(null);
-
-  const sefirahById = Object.fromEntries(SEFIROT.map(s => [s.id, s]));
+  const byId = Object.fromEntries(SEFIROT.map(s => [s.id, s]));
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
-      {/* Tree SVG */}
-      <div className="flex-shrink-0 flex flex-col items-center">
-        <div className="card-mystic p-4 star-bg">
-          <h2 className="text-center text-divine-400 font-serif text-lg mb-3 glow-text">
-            עֵץ חַיִּים — Etz Chaim — Tree of Life
-          </h2>
+    <div className="flex flex-col lg:flex-row gap-6 items-start">
+
+      {/* ── Tree panel ── */}
+      <div className="w-full lg:w-auto lg:flex-shrink-0 flex flex-col items-center">
+
+        {/* Title above tree */}
+        <p className="font-cinzel text-xs tracking-[0.25em] text-mystic-400 mb-3 uppercase">
+          Etz Chaim &nbsp;·&nbsp; <span className="hebrew text-sm">עֵץ חַיִּים</span>
+        </p>
+
+        <div
+          className="card-mystic star-bg p-3 w-full"
+          style={{ maxWidth: 460 }}
+        >
           <svg
-            viewBox="0 0 500 720"
-            width="340"
-            height="490"
-            className="mx-auto"
-            style={{ filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.15))' }}
+            viewBox="0 0 500 730"
+            className="w-full"
+            style={{
+              filter: 'drop-shadow(0 0 32px rgba(91,33,182,0.18))',
+              maxHeight: '82vh',
+            }}
           >
-            {/* Background glow */}
             <defs>
+              {/* Gradient fills for each sefirah */}
               {SEFIROT.map(s => (
-                <radialGradient key={s.id} id={`glow-${s.id}`} cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor={s.color} stopOpacity="0.4" />
-                  <stop offset="100%" stopColor={s.color} stopOpacity="0" />
+                <radialGradient key={s.id} id={`fill-${s.id}`} cx="40%" cy="35%" r="65%">
+                  <stop offset="0%"   stopColor={s.color} stopOpacity="0.40" />
+                  <stop offset="100%" stopColor={s.color} stopOpacity="0.07" />
                 </radialGradient>
               ))}
-              <radialGradient id="tree-bg" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#1a0a2e" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#06060f" stopOpacity="0.9" />
-              </radialGradient>
+              {/* Glow gradient for selected */}
+              {SEFIROT.map(s => (
+                <radialGradient key={`g-${s.id}`} id={`glow-${s.id}`} cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"   stopColor={s.color} stopOpacity="0.30" />
+                  <stop offset="100%" stopColor={s.color} stopOpacity="0"    />
+                </radialGradient>
+              ))}
+              {/* Soft blur filter */}
+              <filter id="blur-light" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" />
+              </filter>
+              <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              {/* Active path gradient */}
+              <linearGradient id="active-path" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"   stopColor="#d4af37" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#d4af37" stopOpacity="0.5" />
+              </linearGradient>
             </defs>
 
-            <rect width="500" height="720" fill="url(#tree-bg)" rx="12" />
+            {/* Dark background */}
+            <rect width="500" height="730" fill="rgba(6,4,18,0.7)" rx="14" />
 
-            {/* Three pillars guide lines */}
-            <line x1="110" y1="80" x2="110" y2="640" stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="250" y1="30" x2="250" y2="680" stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
-            <line x1="390" y1="80" x2="390" y2="500" stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 4" />
+            {/* ── Three pillar columns (subtle coloured bars) ── */}
+            <rect x="88"  y="100" width="44" height="420" rx="22" fill="rgba(180,20,20,0.04)" />
+            <rect x="228" y="40"  width="44" height="640" rx="22" fill="rgba(91,33,182,0.04)" />
+            <rect x="368" y="100" width="44" height="420" rx="22" fill="rgba(30,60,180,0.04)" />
 
             {/* Pillar labels */}
-            <text x="35" y="360" fill="rgba(204,34,34,0.5)" fontSize="9" textAnchor="middle" transform="rotate(-90,35,360)">Pillar of Severity</text>
-            <text x="465" y="360" fill="rgba(34,68,204,0.5)" fontSize="9" textAnchor="middle" transform="rotate(90,465,360)">Pillar of Mercy</text>
+            <text x="33"  y="310" fill="rgba(200,40,40,0.35)"  fontSize="8.5" textAnchor="middle" transform="rotate(-90,33,310)"  fontFamily="Cinzel,Georgia,serif" letterSpacing="2">SEVERITY</text>
+            <text x="467" y="310" fill="rgba(40,80,200,0.35)"  fontSize="8.5" textAnchor="middle" transform="rotate(90,467,310)"   fontFamily="Cinzel,Georgia,serif" letterSpacing="2">MERCY</text>
 
-            {/* Paths / connections */}
+            {/* ── Paths ── */}
             {PATHS.map(path => {
-              const from = sefirahById[path.from];
-              const to = sefirahById[path.to];
+              const from = byId[path.from];
+              const to   = byId[path.to];
               if (!from || !to) return null;
-              const isActive = selected && (selected.id === path.from || selected.id === path.to);
+              const active = selected && (selected.id === path.from || selected.id === path.to);
+              const mx = (from.x + to.x) / 2;
+              const my = (from.y + to.y) / 2;
               return (
                 <g key={path.number}>
+                  {/* Glow behind active path */}
+                  {active && (
+                    <line
+                      x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                      stroke="#d4af37" strokeWidth="5" opacity="0.12"
+                      filter="url(#blur-light)"
+                    />
+                  )}
                   <line
-                    x1={from.x} y1={from.y}
-                    x2={to.x} y2={to.y}
-                    stroke={isActive ? 'rgba(212,175,55,0.7)' : 'rgba(255,255,255,0.12)'}
-                    strokeWidth={isActive ? 2 : 1}
+                    x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                    stroke={active ? '#d4af37' : 'rgba(255,255,255,0.11)'}
+                    strokeWidth={active ? 1.8 : 1}
                     className="path-line"
                   />
+                  {/* Hebrew letter at midpoint */}
                   <text
-                    x={(from.x + to.x) / 2}
-                    y={(from.y + to.y) / 2}
-                    fill={isActive ? 'rgba(212,175,55,0.9)' : 'rgba(255,255,255,0.25)'}
-                    fontSize="9"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    style={{ fontFamily: 'Arial Hebrew, Arial, sans-serif' }}
+                    x={mx} y={my}
+                    fill={active ? 'rgba(212,175,55,0.95)' : 'rgba(255,255,255,0.22)'}
+                    fontSize="9" textAnchor="middle" dominantBaseline="middle"
+                    fontFamily="Arial Hebrew,Arial,sans-serif"
                   >
                     {path.hebrewLetter}
                   </text>
@@ -77,116 +110,143 @@ export default function TreeOfLife() {
               );
             })}
 
-            {/* Sefirot circles */}
-            {SEFIROT.map(sefirah => {
-              const isSelected = selected?.id === sefirah.id;
+            {/* ── Da'at — hidden sefirah ── */}
+            <g opacity="0.28">
+              <circle cx={DAAT.x} cy={DAAT.y} r="18" fill="none"
+                stroke="#888" strokeWidth="1" strokeDasharray="4 3" />
+              <text x={DAAT.x} y={DAAT.y - 1}
+                fill="#aaa" fontSize="7.5" textAnchor="middle" dominantBaseline="middle"
+                fontFamily="Cinzel,Georgia,serif" letterSpacing="0.5">
+                Da'at
+              </text>
+              <text x={DAAT.x} y={DAAT.y + 8}
+                fill="#888" fontSize="6.5" textAnchor="middle" dominantBaseline="middle"
+                fontFamily="Arial Hebrew,Arial,sans-serif">
+                דַּעַת
+              </text>
+            </g>
+
+            {/* ── Sefirot circles ── */}
+            {SEFIROT.map(s => {
+              const sel = selected?.id === s.id;
+              const r = { outer: 26, main: 22, inner: 16 };
+
               return (
                 <g
-                  key={sefirah.id}
+                  key={s.id}
                   className="sefirah-circle"
-                  onClick={() => setSelected(isSelected ? null : sefirah)}
+                  onClick={() => setSelected(sel ? null : s)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  {/* Glow background */}
-                  {isSelected && (
-                    <circle
-                      cx={sefirah.x}
-                      cy={sefirah.y}
-                      r={38}
-                      fill={`url(#glow-${sefirah.id})`}
-                      className="sefirah-selected-ring"
-                    />
-                  )}
-                  {/* Outer ring */}
+                  {/* Outer soft glow (blurred) */}
                   <circle
-                    cx={sefirah.x}
-                    cy={sefirah.y}
-                    r={isSelected ? 26 : 22}
+                    cx={s.x} cy={s.y} r={sel ? 44 : 36}
+                    fill={`url(#glow-${s.id})`}
+                    filter="url(#blur-light)"
+                    className={sel ? 'sefirah-selected-ring' : ''}
+                  />
+
+                  {/* Decorative outer dashed ring */}
+                  <circle
+                    cx={s.x} cy={s.y} r={r.outer + (sel ? 3 : 0)}
                     fill="none"
-                    stroke={sefirah.color}
-                    strokeWidth={isSelected ? 2.5 : 1.5}
-                    opacity={isSelected ? 1 : 0.7}
+                    stroke={s.color}
+                    strokeWidth={sel ? 0.8 : 0.5}
+                    strokeDasharray="3 3"
+                    opacity={sel ? 0.7 : 0.3}
+                    style={{ transition: 'all 0.3s' }}
                   />
-                  {/* Inner fill */}
+
+                  {/* Main circle */}
                   <circle
-                    cx={sefirah.x}
-                    cy={sefirah.y}
-                    r={isSelected ? 23 : 19}
-                    fill={`${sefirah.color}22`}
-                    stroke={sefirah.color}
-                    strokeWidth={isSelected ? 1.5 : 1}
-                    opacity={isSelected ? 0.9 : 0.6}
+                    cx={s.x} cy={s.y} r={r.main + (sel ? 3 : 0)}
+                    fill={`url(#fill-${s.id})`}
+                    stroke={s.color}
+                    strokeWidth={sel ? 1.8 : 1.2}
+                    opacity={sel ? 1 : 0.82}
+                    style={{ transition: 'all 0.3s' }}
                   />
-                  {/* Number */}
+
+                  {/* Inner highlight arc (top-left quarter) */}
+                  <circle
+                    cx={s.x} cy={s.y} r={r.inner}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth="0.6"
+                    strokeDasharray={`${r.inner * 0.9} ${r.inner * 5.4}`}
+                    strokeDashoffset={`${r.inner * 1.2}`}
+                    opacity={sel ? 0.6 : 0.25}
+                  />
+
+                  {/* Sefirah number */}
                   <text
-                    x={sefirah.x}
-                    y={sefirah.y - 4}
-                    fill={sefirah.color}
-                    fontSize={isSelected ? "11" : "10"}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontWeight="bold"
-                    opacity={isSelected ? 1 : 0.85}
+                    x={s.x} y={s.y - 4}
+                    fill={s.color}
+                    fontSize={sel ? 12 : 10.5}
+                    textAnchor="middle" dominantBaseline="middle"
+                    fontWeight="700"
+                    fontFamily="Cinzel,Georgia,serif"
+                    opacity={sel ? 1 : 0.9}
+                    style={{ transition: 'font-size 0.25s' }}
                   >
-                    {sefirah.number}
+                    {s.number}
                   </text>
-                  {/* Hebrew name */}
+
+                  {/* First Hebrew character of name */}
                   <text
-                    x={sefirah.x}
-                    y={sefirah.y + 6}
-                    fill={sefirah.color}
-                    fontSize="7"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    style={{ fontFamily: 'Arial Hebrew, Arial, sans-serif' }}
-                    opacity={isSelected ? 1 : 0.8}
+                    x={s.x} y={s.y + 6}
+                    fill={s.color}
+                    fontSize="8" textAnchor="middle" dominantBaseline="middle"
+                    fontFamily="Arial Hebrew,Arial,sans-serif"
+                    opacity={sel ? 0.9 : 0.65}
                   >
-                    {sefirah.hebrewName.split('')[0]}
+                    {s.hebrewName[0]}
                   </text>
+
                   {/* English label below circle */}
                   <text
-                    x={sefirah.x}
-                    y={sefirah.y + (isSelected ? 34 : 30)}
-                    fill={isSelected ? sefirah.color : 'rgba(255,255,255,0.7)'}
-                    fontSize={isSelected ? "9.5" : "8.5"}
+                    x={s.x} y={s.y + (r.main + (sel ? 3 : 0)) + 10}
+                    fill={sel ? s.color : 'rgba(220,210,240,0.75)'}
+                    fontSize={sel ? 9.5 : 8.5}
                     textAnchor="middle"
-                    fontWeight={isSelected ? "bold" : "normal"}
+                    fontFamily="Cinzel,Georgia,serif"
+                    fontWeight={sel ? '600' : '400'}
+                    letterSpacing="0.5"
+                    style={{ transition: 'all 0.25s' }}
                   >
-                    {sefirah.name}
+                    {s.name}
                   </text>
                 </g>
               );
             })}
           </svg>
 
-          <p className="text-center text-xs text-mystic-500 mt-3">
-            Click a sefirah to learn more
+          <p className="text-center text-[11px] text-mystic-600 font-cinzel tracking-widest mt-2 pb-1">
+            SELECT A SEFIRAH
           </p>
         </div>
 
         {/* Pillar legend */}
-        <div className="flex gap-4 mt-3 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-red-600 opacity-70" />
-            <span className="text-gray-500">Severity</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-purple-500 opacity-70" />
-            <span className="text-gray-500">Equilibrium</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500 opacity-70" />
-            <span className="text-gray-500">Mercy</span>
-          </div>
+        <div className="flex gap-5 mt-4 text-[11px] font-cinzel tracking-wider">
+          {[
+            { color: '#cc2222', label: 'Severity' },
+            { color: '#7c3aed', label: 'Equilibrium' },
+            { color: '#2244cc', label: 'Mercy' },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: color, opacity: 0.7 }} />
+              <span style={{ color: 'rgba(160,140,200,0.6)' }}>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Detail panel */}
-      <div className="flex-1 min-w-0">
-        {selected ? (
-          <SefirahDetail sefirah={selected} onClose={() => setSelected(null)} />
-        ) : (
-          <WelcomePanel />
-        )}
+      {/* ── Detail / Welcome panel ── */}
+      <div className="flex-1 min-w-0 w-full">
+        {selected
+          ? <SefirahDetail sefirah={selected} onClose={() => setSelected(null)} />
+          : <WelcomePanel />
+        }
       </div>
     </div>
   );
@@ -194,36 +254,60 @@ export default function TreeOfLife() {
 
 function WelcomePanel() {
   return (
-    <div className="card-mystic p-8 h-full flex flex-col justify-center">
-      <div className="text-center mb-8">
-        <div className="text-6xl mb-4">✡</div>
-        <h2 className="text-3xl font-serif text-divine-400 glow-text mb-2">
+    <div className="card-mystic p-8 lg:p-10 flex flex-col justify-center min-h-[520px]">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <div
+          className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-5 text-3xl"
+          style={{
+            background: 'radial-gradient(circle at 40% 35%, rgba(212,175,55,0.18), rgba(91,33,182,0.10))',
+            border: '1px solid rgba(212,175,55,0.3)',
+            boxShadow: '0 0 32px rgba(212,175,55,0.15)',
+          }}
+        >
+          ✡
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-cinzel glow-text mb-2" style={{ color: '#d4af37' }}>
           Talmud Eser Sefirot
         </h2>
-        <p className="text-mystic-300 text-lg">Study of the Ten Sefirot</p>
-        <p className="text-gray-500 text-sm mt-1">Based on the teachings of Baal HaSulam</p>
+        <p className="font-crimson text-mystic-300 text-lg italic">Study of the Ten Sefirot</p>
+        <p className="text-sm text-gray-500 mt-1">Based on the teachings of Baal HaSulam (1884–1954)</p>
+        <div className="divider-divine mt-5 max-w-[200px] mx-auto" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto w-full">
+      {/* Feature cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto w-full mb-8">
         {[
-          { icon: '🌳', title: 'The Tree of Life', desc: 'An interactive map of the ten divine emanations and 22 spiritual paths' },
-          { icon: '📖', title: '8 Structured Lessons', desc: 'From Or Ein Sof to Tikkun — covering all foundational concepts' },
-          { icon: '📚', title: 'Complete Glossary', desc: 'Definitions of 35+ key Kabbalistic terms in Hebrew and English' },
-          { icon: '✍️', title: 'Study Quiz', desc: 'Test your understanding with 20 questions on the material' },
+          { num: '10',  label: 'Divine Sefirot',      desc: 'Click any sefirah to explore its nature and Baal HaSulam\'s teaching' },
+          { num: '22',  label: 'Spiritual Paths',     desc: 'The 22 Hebrew-letter paths connecting the sefirot' },
+          { num: '8',   label: 'Structured Lessons',  desc: 'From Or Ein Sof and Tzimtzum to Tikkun and Dvekut' },
+          { num: '35+', label: 'Glossary Terms',      desc: 'Key Kabbalistic terminology in English, Hebrew, and transliteration' },
         ].map(item => (
-          <div key={item.title} className="bg-void-900 border border-mystic-900 rounded-lg p-4">
-            <div className="text-2xl mb-2">{item.icon}</div>
-            <h3 className="font-serif text-divine-400 text-sm font-semibold mb-1">{item.title}</h3>
-            <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+          <div
+            key={item.label}
+            className="rounded-xl p-4 border border-mystic-900/60"
+            style={{ background: 'rgba(12,6,28,0.7)' }}
+          >
+            <p className="font-cinzel text-2xl font-bold glow-text mb-0.5" style={{ color: '#d4af37' }}>
+              {item.num}
+            </p>
+            <p className="font-cinzel text-xs text-mystic-300 tracking-wide mb-1">{item.label}</p>
+            <p className="font-crimson text-xs text-gray-500 leading-snug">{item.desc}</p>
           </div>
         ))}
       </div>
 
-      <p className="text-center text-gray-600 text-xs mt-8 max-w-md mx-auto">
-        "The wisdom of Kabbalah is no more and no less than a sequence of roots that hang down by way of cause and effect, by fixed, determined laws, interweaving to a single, exalted goal."
-        <br />
-        <span className="text-mystic-600 italic">— Baal HaSulam</span>
-      </p>
+      {/* Quote */}
+      <blockquote className="border-l-2 border-divine-500/50 pl-4 max-w-md mx-auto">
+        <p className="font-crimson italic text-gray-400 text-sm leading-relaxed">
+          "The wisdom of Kabbalah is no more and no less than a sequence of roots
+          that hang down by way of cause and effect… interweaving to a single,
+          exalted goal: the revelation of His Godliness to His creatures in this world."
+        </p>
+        <cite className="block text-xs text-mystic-600 mt-2 not-italic">
+          — Baal HaSulam, Introduction to Talmud Eser Sefirot
+        </cite>
+      </blockquote>
     </div>
   );
 }

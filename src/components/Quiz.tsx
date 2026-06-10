@@ -239,83 +239,88 @@ const QUESTIONS: Question[] = [
 
 type QuizState = 'intro' | 'playing' | 'complete';
 
+const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+
 export default function Quiz() {
-  const [state, setState] = useState<QuizState>('intro');
-  const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [state, setState]         = useState<QuizState>('intro');
+  const [currentQ, setCurrentQ]   = useState(0);
+  const [answers, setAnswers]     = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
+  const [showExp, setShowExp]     = useState(false);
 
-  const question = QUESTIONS[currentQ];
+  const question       = QUESTIONS[currentQ];
   const selectedAnswer = answers[currentQ];
-  const isAnswered = selectedAnswer !== null;
-  const isCorrect = selectedAnswer === question.correct;
-  const score = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const isAnswered     = selectedAnswer !== null;
+  const isCorrect      = selectedAnswer === question.correct;
+  const score          = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const progressPct    = ((currentQ + (isAnswered ? 1 : 0)) / QUESTIONS.length) * 100;
 
-  const selectAnswer = useCallback((optionIdx: number) => {
+  const selectAnswer = useCallback((idx: number) => {
     if (isAnswered) return;
-    setAnswers(prev => {
-      const next = [...prev];
-      next[currentQ] = optionIdx;
-      return next;
-    });
-    setShowExplanation(true);
+    setAnswers(prev => { const n = [...prev]; n[currentQ] = idx; return n; });
+    setShowExp(true);
   }, [isAnswered, currentQ]);
 
   const nextQuestion = useCallback(() => {
-    if (currentQ < QUESTIONS.length - 1) {
-      setCurrentQ(q => q + 1);
-      setShowExplanation(false);
-    } else {
-      setState('complete');
-    }
+    if (currentQ < QUESTIONS.length - 1) { setCurrentQ(q => q + 1); setShowExp(false); }
+    else setState('complete');
   }, [currentQ]);
 
   const restart = useCallback(() => {
-    setState('intro');
-    setCurrentQ(0);
-    setAnswers(Array(QUESTIONS.length).fill(null));
-    setShowExplanation(false);
+    setState('intro'); setCurrentQ(0);
+    setAnswers(Array(QUESTIONS.length).fill(null)); setShowExp(false);
   }, []);
 
+  /* ── Intro ── */
   if (state === 'intro') {
+    const topics = [...new Set(QUESTIONS.map(q => q.topic))];
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="card-mystic p-8 text-center">
-          <div className="text-5xl mb-4">✍️</div>
-          <h2 className="text-2xl font-serif text-divine-400 glow-text mb-2">Kabbalah Study Quiz</h2>
-          <p className="text-mystic-400 mb-6">Test your understanding of Baal HaSulam's teachings</p>
+        <div className="card-mystic p-8 sm:p-10 text-center">
+          <div
+            className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6 font-cinzel text-2xl"
+            style={{
+              background: 'radial-gradient(circle at 40% 35%, rgba(212,175,55,0.18), rgba(91,33,182,0.1))',
+              border: '1px solid rgba(212,175,55,0.3)',
+              boxShadow: '0 0 32px rgba(212,175,55,0.12)',
+            }}
+          >
+            ✦
+          </div>
+          <h2 className="font-cinzel text-2xl sm:text-3xl glow-text mb-2" style={{ color: '#d4af37' }}>
+            Kabbalah Study Quiz
+          </h2>
+          <p className="font-crimson italic text-mystic-400 text-base mb-8">
+            Test your understanding of Baal HaSulam's teachings
+          </p>
 
-          <div className="grid grid-cols-3 gap-4 mb-8 max-w-sm mx-auto">
-            <div className="bg-void-900 border border-mystic-900 rounded-lg p-4">
-              <p className="text-2xl font-bold text-divine-400">{QUESTIONS.length}</p>
-              <p className="text-xs text-gray-500 mt-1">Questions</p>
-            </div>
-            <div className="bg-void-900 border border-mystic-900 rounded-lg p-4">
-              <p className="text-2xl font-bold text-mystic-400">8</p>
-              <p className="text-xs text-gray-500 mt-1">Topics</p>
-            </div>
-            <div className="bg-void-900 border border-mystic-900 rounded-lg p-4">
-              <p className="text-2xl font-bold text-green-400">∞</p>
-              <p className="text-xs text-gray-500 mt-1">Retries</p>
-            </div>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-8 max-w-xs mx-auto">
+            {[
+              { n: QUESTIONS.length, label: 'Questions' },
+              { n: 8,                label: 'Topics'    },
+              { n: '∞',              label: 'Retries'   },
+            ].map(({ n, label }) => (
+              <div key={label} className="rounded-xl p-4" style={{ background: 'rgba(10,6,24,0.7)', border: '1px solid rgba(91,33,182,0.2)' }}>
+                <p className="font-cinzel text-2xl font-bold glow-text" style={{ color: '#d4af37' }}>{n}</p>
+                <p className="font-cinzel text-[10px] tracking-wider text-gray-500 mt-1">{label.toUpperCase()}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="text-left bg-void-900 border border-mystic-900 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-semibold text-mystic-300 mb-2">Topics covered:</h3>
+          {/* Topics */}
+          <div className="text-left rounded-xl p-4 mb-8" style={{ background: 'rgba(10,6,24,0.6)', border: '1px solid rgba(91,33,182,0.2)' }}>
+            <p className="font-cinzel text-[11px] tracking-wider text-mystic-500 mb-3">TOPICS COVERED</p>
             <div className="flex flex-wrap gap-2">
-              {[...new Set(QUESTIONS.map(q => q.topic))].map(topic => (
-                <span key={topic} className="text-xs px-2 py-1 rounded border border-mystic-800 text-mystic-400">
-                  {topic}
+              {topics.map(t => (
+                <span key={t} className="font-cinzel text-[11px] tracking-wide px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(91,33,182,0.14)', border: '1px solid rgba(91,33,182,0.25)', color: 'rgba(160,120,240,0.8)' }}>
+                  {t}
                 </span>
               ))}
             </div>
           </div>
 
-          <button
-            onClick={() => setState('playing')}
-            className="px-8 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #5b21b6, #d4af37)' }}
-          >
+          <button onClick={() => setState('playing')} className="btn-primary px-10 py-3 text-sm">
             Begin Study →
           </button>
         </div>
@@ -323,63 +328,59 @@ export default function Quiz() {
     );
   }
 
+  /* ── Complete ── */
   if (state === 'complete') {
     const pct = Math.round((score / QUESTIONS.length) * 100);
     const grade =
-      pct >= 90 ? { label: 'Excellent!', color: '#d4af37', emoji: '🌟' }
-      : pct >= 75 ? { label: 'Very Good!', color: '#22c55e', emoji: '✓' }
-      : pct >= 60 ? { label: 'Good Start', color: '#f59e0b', emoji: '📖' }
-      : { label: 'Keep Studying', color: '#ef4444', emoji: '💪' };
+      pct >= 90 ? { label: 'Excellent!',    color: '#d4af37', mark: '✦' }
+    : pct >= 75 ? { label: 'Very Good!',    color: '#22c55e', mark: '✓' }
+    : pct >= 60 ? { label: 'Good Start',    color: '#f59e0b', mark: '◉' }
+    :             { label: 'Keep Studying', color: '#ef4444', mark: '◈' };
 
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="card-mystic p-8 text-center mb-6">
-          <div className="text-6xl mb-4">{grade.emoji}</div>
-          <h2 className="text-2xl font-serif mb-2" style={{ color: grade.color }}>{grade.label}</h2>
-          <p className="text-divine-400 text-4xl font-bold mb-1">{score} / {QUESTIONS.length}</p>
-          <p className="text-gray-500 text-sm mb-6">{pct}% correct</p>
+        <div className="card-mystic p-8 text-center mb-5">
+          <div className="font-cinzel text-5xl mb-4" style={{ color: grade.color }}>{grade.mark}</div>
+          <h2 className="font-cinzel text-2xl mb-1" style={{ color: grade.color }}>{grade.label}</h2>
+          <p className="font-cinzel text-5xl font-bold glow-text my-2" style={{ color: '#d4af37' }}>
+            {score}<span className="text-2xl text-mystic-600">/{QUESTIONS.length}</span>
+          </p>
+          <p className="font-crimson italic text-gray-500 mb-6">{pct}% correct</p>
 
-          <div className="h-3 bg-void-900 rounded-full border border-mystic-900 overflow-hidden mb-6">
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{
-                width: `${pct}%`,
-                background: `linear-gradient(90deg, ${grade.color}80, ${grade.color})`,
-              }}
-            />
+          {/* Result bar */}
+          <div className="h-2 rounded-full overflow-hidden mb-6"
+            style={{ background: 'rgba(91,33,182,0.15)', border: '1px solid rgba(91,33,182,0.2)' }}>
+            <div className="h-full rounded-full transition-all duration-1000"
+              style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${grade.color}60, ${grade.color})` }} />
           </div>
 
-          <button
-            onClick={restart}
-            className="px-8 py-3 rounded-xl font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #5b21b6, #d4af37)' }}
-          >
-            Try Again
-          </button>
+          <button onClick={restart} className="btn-primary">Try Again</button>
         </div>
 
         {/* Answer review */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-mystic-400 px-1">Answer Review</h3>
+        <p className="font-cinzel text-[11px] tracking-wider text-mystic-600 mb-3 px-1">ANSWER REVIEW</p>
+        <div className="space-y-2">
           {QUESTIONS.map((q, i) => {
-            const a = answers[i];
-            const correct = a === q.correct;
+            const correct = answers[i] === q.correct;
             return (
-              <div key={q.id} className="card-mystic p-4">
-                <div className="flex items-start gap-3">
-                  <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    correct ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}>
-                    {correct ? '✓' : '✗'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-200">{q.question}</p>
-                    {!correct && (
-                      <p className="text-xs text-green-400 mt-1">
-                        Correct: {q.options[q.correct]}
-                      </p>
-                    )}
-                  </div>
+              <div key={q.id} className="card-mystic p-4 flex items-start gap-3">
+                <span
+                  className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-cinzel"
+                  style={{
+                    background: correct ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                    border: `1px solid ${correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                    color:  correct ? '#4ade80' : '#f87171',
+                  }}
+                >
+                  {correct ? '✓' : '✗'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-crimson text-sm text-gray-300">{q.question}</p>
+                  {!correct && (
+                    <p className="font-crimson text-xs text-green-400/80 mt-1">
+                      ✓ {q.options[q.correct]}
+                    </p>
+                  )}
                 </div>
               </div>
             );
@@ -389,42 +390,49 @@ export default function Quiz() {
     );
   }
 
+  /* ── Playing ── */
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Progress header */}
-      <div className="card-mystic p-4 mb-4">
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
-          <span>Question {currentQ + 1} of {QUESTIONS.length}</span>
-          <span className="text-divine-400">{question.topic}</span>
+      {/* Progress */}
+      <div className="card-mystic px-5 py-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-cinzel text-xs tracking-wider text-mystic-500">
+            QUESTION {currentQ + 1} / {QUESTIONS.length}
+          </span>
+          <span className="font-cinzel text-xs tracking-wider" style={{ color: 'rgba(212,175,55,0.7)' }}>
+            {question.topic.toUpperCase()}
+          </span>
         </div>
-        <div className="h-1.5 bg-void-900 rounded-full border border-mystic-900 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-300"
-            style={{
-              width: `${((currentQ + (isAnswered ? 1 : 0)) / QUESTIONS.length) * 100}%`,
-              background: 'linear-gradient(90deg, #5b21b6, #d4af37)',
-            }}
-          />
+        <div className="h-1.5 rounded-full overflow-hidden"
+          style={{ background: 'rgba(91,33,182,0.15)', border: '1px solid rgba(91,33,182,0.2)' }}>
+          <div className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #5b21b6, #d4af37)' }} />
         </div>
       </div>
 
-      {/* Question card */}
-      <div className="card-mystic p-6 mb-4">
-        <h3 className="text-lg font-serif text-gray-100 mb-6 leading-relaxed">
+      {/* Question */}
+      <div className="card-mystic p-6 sm:p-7 mb-4 view-enter">
+        <h3 className="font-crimson text-[18px] text-gray-100 mb-6 leading-relaxed">
           {question.question}
         </h3>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {question.options.map((option, idx) => {
-            let style = 'border-mystic-800 text-gray-300 hover:border-mystic-600 hover:bg-mystic-900/30';
+            const isCorrectOption = idx === question.correct;
+            const isSelectedWrong = idx === selectedAnswer && !isCorrect;
+
+            let bg      = 'rgba(10,6,24,0.5)';
+            let border  = 'rgba(91,33,182,0.25)';
+            let color   = 'rgba(220,210,240,0.8)';
+            let opacity = '1';
 
             if (isAnswered) {
-              if (idx === question.correct) {
-                style = 'border-green-500/50 bg-green-500/10 text-green-300';
-              } else if (idx === selectedAnswer && !isCorrect) {
-                style = 'border-red-500/50 bg-red-500/10 text-red-300';
+              if (isCorrectOption) {
+                bg = 'rgba(34,197,94,0.08)'; border = 'rgba(34,197,94,0.4)'; color = '#86efac';
+              } else if (isSelectedWrong) {
+                bg = 'rgba(239,68,68,0.08)';  border = 'rgba(239,68,68,0.4)';  color = '#fca5a5';
               } else {
-                style = 'border-mystic-900 text-gray-500 opacity-50';
+                opacity = '0.35';
               }
             }
 
@@ -433,45 +441,61 @@ export default function Quiz() {
                 key={idx}
                 onClick={() => selectAnswer(idx)}
                 disabled={isAnswered}
-                className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-all ${style} ${
-                  isAnswered ? 'cursor-default' : 'cursor-pointer'
-                }`}
+                className="w-full text-left rounded-xl px-4 py-3 flex items-center gap-3 transition-all duration-200"
+                style={{
+                  background: isAnswered ? bg : undefined,
+                  border: `1px solid ${border}`,
+                  color,
+                  opacity,
+                  cursor: isAnswered ? 'default' : 'pointer',
+                  ...((!isAnswered) ? {} : {}),
+                }}
+                onMouseEnter={e => { if (!isAnswered) e.currentTarget.style.borderColor = 'rgba(139,92,246,0.55)'; }}
+                onMouseLeave={e => { if (!isAnswered) e.currentTarget.style.borderColor = border; }}
               >
-                <span className="font-medium mr-3 text-mystic-500">
-                  {String.fromCharCode(65 + idx)}.
+                <span
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-cinzel text-xs font-bold"
+                  style={{
+                    background: isAnswered && isCorrectOption ? 'rgba(34,197,94,0.2)'
+                              : isAnswered && isSelectedWrong ? 'rgba(239,68,68,0.2)'
+                              : 'rgba(91,33,182,0.2)',
+                    border: `1px solid ${border}`,
+                    color,
+                  }}
+                >
+                  {isAnswered && isCorrectOption ? '✓' : isAnswered && isSelectedWrong ? '✗' : OPTION_LETTERS[idx]}
                 </span>
-                {option}
-                {isAnswered && idx === question.correct && <span className="float-right">✓</span>}
-                {isAnswered && idx === selectedAnswer && !isCorrect && <span className="float-right">✗</span>}
+                <span className="font-crimson text-[15px] leading-snug">{option}</span>
               </button>
             );
           })}
         </div>
 
         {/* Explanation */}
-        {showExplanation && (
-          <div className={`mt-4 p-4 rounded-lg border ${
-            isCorrect
-              ? 'border-green-500/30 bg-green-500/5'
-              : 'border-red-500/30 bg-red-500/5'
-          }`}>
-            <p className={`text-xs font-semibold mb-2 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-              {isCorrect ? '✓ Correct!' : '✗ Not quite.'}
+        {showExp && (
+          <div
+            className="mt-5 p-4 rounded-xl view-enter"
+            style={{
+              background: isCorrect ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+              border: `1px solid ${isCorrect ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
+            }}
+          >
+            <p className="font-cinzel text-[11px] tracking-wider mb-2"
+              style={{ color: isCorrect ? '#4ade80' : '#f87171' }}>
+              {isCorrect ? '✓ CORRECT' : '✗ NOT QUITE'}
             </p>
-            <p className="text-sm text-gray-300 leading-relaxed">{question.explanation}</p>
+            <p className="font-crimson text-[15px] text-gray-300 leading-relaxed">
+              {question.explanation}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Next button */}
+      {/* Next */}
       {isAnswered && (
-        <div className="flex justify-end">
-          <button
-            onClick={nextQuestion}
-            className="px-6 py-2.5 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #5b21b6, #d4af37)' }}
-          >
-            {currentQ < QUESTIONS.length - 1 ? 'Next Question →' : 'See Results →'}
+        <div className="flex justify-end view-enter">
+          <button onClick={nextQuestion} className="btn-primary">
+            {currentQ < QUESTIONS.length - 1 ? 'Next →' : 'See Results →'}
           </button>
         </div>
       )}

@@ -4,94 +4,129 @@
 
 @layer base {
   body {
-    @apply bg-void-950 text-gray-100 font-sans;
-    background-image: radial-gradient(ellipse at top, #1a0a2e 0%, #0a0a1a 50%, #06060f 100%);
+    @apply bg-void-950 text-gray-100;
+    font-family: 'Crimson Text', Georgia, 'Times New Roman', serif;
+    font-size: 17px;
+    line-height: 1.7;
+    background-image: radial-gradient(ellipse at top, #16082e 0%, #0a0a1a 55%, #06060f 100%);
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4 {
-    @apply font-serif;
+  h1, h2, h3, h4, h5 {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.02em;
   }
+
+  p { @apply leading-relaxed; }
 }
 
 @layer components {
   .sefirah-circle {
     cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .sefirah-circle:hover {
-    filter: brightness(1.4) drop-shadow(0 0 12px currentColor);
-  }
-
-  .sefirah-circle.selected {
-    filter: brightness(1.6) drop-shadow(0 0 20px currentColor);
   }
 
   .glow-text {
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+    text-shadow: 0 0 24px rgba(212, 175, 55, 0.7), 0 0 48px rgba(212, 175, 55, 0.25);
+  }
+
+  .glow-text-mystic {
+    text-shadow: 0 0 24px rgba(139, 92, 246, 0.6);
   }
 
   .card-mystic {
-    @apply bg-void-900 border border-mystic-700 rounded-xl;
-    background: linear-gradient(135deg, rgba(30, 20, 60, 0.9), rgba(10, 10, 30, 0.95));
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    @apply rounded-2xl border border-mystic-800/60;
+    background: linear-gradient(145deg, rgba(22, 10, 48, 0.92) 0%, rgba(10, 10, 26, 0.97) 100%);
+    box-shadow:
+      0 0 0 1px rgba(139, 92, 246, 0.06),
+      0 4px 24px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  .path-line {
-    transition: stroke-width 0.3s, opacity 0.3s;
+  .card-hover {
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
   }
+  .card-hover:hover {
+    @apply border-mystic-600/50;
+    box-shadow:
+      0 0 0 1px rgba(139, 92, 246, 0.12),
+      0 8px 32px rgba(0, 0, 0, 0.6),
+      0 0 60px rgba(91, 33, 182, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    @apply px-6 py-2.5 rounded-xl font-semibold text-white transition-all duration-200;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #b8921f 100%);
+    box-shadow: 0 0 24px rgba(91, 33, 182, 0.35);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 32px rgba(91, 33, 182, 0.55);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
 
   .scrollbar-mystic {
     scrollbar-width: thin;
-    scrollbar-color: #5b21b6 #1a0a2e;
+    scrollbar-color: rgba(91, 33, 182, 0.5) transparent;
   }
-
-  .scrollbar-mystic::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .scrollbar-mystic::-webkit-scrollbar-track {
-    background: #1a0a2e;
-  }
-
+  .scrollbar-mystic::-webkit-scrollbar { width: 4px; }
+  .scrollbar-mystic::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-mystic::-webkit-scrollbar-thumb {
-    background: #5b21b6;
-    border-radius: 3px;
+    background: rgba(91, 33, 182, 0.4);
+    border-radius: 2px;
+  }
+
+  .divider-divine {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
   }
 }
 
 @layer utilities {
+  .font-cinzel { font-family: 'Cinzel', Georgia, serif; }
+  .font-crimson { font-family: 'Crimson Text', Georgia, serif; }
+
+  .hebrew {
+    direction: rtl;
+    font-family: 'Arial Hebrew', 'David', Arial, sans-serif;
+  }
+
   .star-bg {
     background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 60% 25%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 80% 55%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 45% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 15% 45%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 70% 90%, rgba(255,255,255,0.3) 0%, transparent 100%);
+      radial-gradient(1px 1px at 8%  12%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 68%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 78% 52%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 41% 83%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 91% 8%,  rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 14% 43%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 67% 88%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 33% 33%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 75%, rgba(212,175,55,0.2) 0%, transparent 100%);
   }
 }
 
-/* Hebrew text direction */
-.hebrew {
-  direction: rtl;
-  font-family: 'Arial Hebrew', 'David', 'Arial', sans-serif;
+/* View fade-in transition */
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+.view-enter {
+  animation: viewFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Sefirah selected pulse */
+@keyframes sefirah-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+.sefirah-selected-ring { animation: sefirah-pulse 2.5s ease-in-out infinite; }
+
+/* SVG path line transition */
+.path-line { transition: stroke 0.3s, stroke-width 0.3s, opacity 0.3s; }
 
 /* Smooth scroll */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Animation for selected sefirah */
-@keyframes sefirah-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
-}
-
-.sefirah-selected-ring {
-  animation: sefirah-pulse 2s ease-in-out infinite;
-}
+html { scroll-behavior: smooth; }
