@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { LESSONS, type Lesson } from '../data/lessons';
+import { usePersistentState } from '../hooks/usePersistentState';
+import { LESSONS_COMPLETED_KEY } from '../lib/storage';
 import LessonView from './LessonView';
 
 export default function Lessons() {
   const [selected, setSelected] = useState<Lesson | null>(null);
-  const [completed, setCompleted] = useState<Set<number>>(new Set());
+  const [completedIds, setCompletedIds] = usePersistentState<number[]>(LESSONS_COMPLETED_KEY, []);
+  const completed = new Set(completedIds);
 
   if (selected) {
     return (
@@ -12,7 +15,7 @@ export default function Lessons() {
         lesson={selected}
         onBack={() => setSelected(null)}
         onComplete={() => {
-          setCompleted(prev => new Set([...prev, selected.id]));
+          setCompletedIds(prev => (prev.includes(selected.id) ? prev : [...prev, selected.id]));
           setSelected(null);
         }}
         isCompleted={completed.has(selected.id)}
@@ -42,6 +45,14 @@ export default function Lessons() {
               <span className="text-mystic-600 text-xl">/{LESSONS.length}</span>
             </p>
             <p className="text-xs text-gray-500 font-cinzel tracking-wider">COMPLETED</p>
+            {completed.size > 0 && (
+              <button
+                onClick={() => setCompletedIds([])}
+                className="font-cinzel text-[10px] tracking-wider text-mystic-600 hover:text-mystic-400 transition-colors mt-1"
+              >
+                RESET
+              </button>
+            )}
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { type Sefirah } from '../data/sefirot';
 
 interface SefirahDetailProps {
@@ -7,6 +8,13 @@ interface SefirahDetailProps {
 
 export default function SefirahDetail({ sefirah, onClose }: SefirahDetailProps) {
   const c = sefirah.color;
+
+  // Esc closes the panel.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <div

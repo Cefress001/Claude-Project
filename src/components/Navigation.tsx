@@ -1,3 +1,7 @@
+import { LESSONS } from '../data/lessons';
+import { usePersistentState } from '../hooks/usePersistentState';
+import { LESSONS_COMPLETED_KEY } from '../lib/storage';
+
 type View = 'tree' | 'lessons' | 'glossary' | 'quiz';
 
 interface NavigationProps {
@@ -13,6 +17,8 @@ const navItems: { view: View; label: string }[] = [
 ];
 
 export default function Navigation({ currentView, onNavigate }: NavigationProps) {
+  const [completedIds] = usePersistentState<number[]>(LESSONS_COMPLETED_KEY, []);
+  const lessonProgress = completedIds.length;
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50"
@@ -62,10 +68,23 @@ export default function Navigation({ currentView, onNavigate }: NavigationProps)
                 <button
                   key={view}
                   onClick={() => onNavigate(view)}
-                  className="relative px-3 sm:px-4 flex items-center font-cinzel text-xs sm:text-[13px] tracking-wide transition-colors duration-200"
+                  className="relative px-3 sm:px-4 flex items-center gap-1.5 font-cinzel text-xs sm:text-[13px] tracking-wide transition-colors duration-200"
                   style={{ color: active ? '#d4af37' : 'rgba(180,160,220,0.7)' }}
                 >
                   {label}
+                  {/* Lessons progress badge */}
+                  {view === 'lessons' && lessonProgress > 0 && (
+                    <span
+                      className="text-[9px] leading-none px-1.5 py-0.5 rounded-full font-bold"
+                      style={{
+                        background: lessonProgress === LESSONS.length ? 'rgba(212,175,55,0.18)' : 'rgba(91,33,182,0.25)',
+                        color: lessonProgress === LESSONS.length ? '#d4af37' : 'rgba(190,170,240,0.9)',
+                        border: `1px solid ${lessonProgress === LESSONS.length ? 'rgba(212,175,55,0.4)' : 'rgba(139,92,246,0.35)'}`,
+                      }}
+                    >
+                      {lessonProgress === LESSONS.length ? '✓' : `${lessonProgress}/${LESSONS.length}`}
+                    </span>
+                  )}
                   {/* Active underline */}
                   {active && (
                     <span

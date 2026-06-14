@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { usePersistentState } from '../hooks/usePersistentState';
+import { QUIZ_BEST_KEY } from '../lib/storage';
 
 interface Question {
   id: number;
@@ -246,6 +248,8 @@ export default function Quiz() {
   const [currentQ, setCurrentQ]   = useState(0);
   const [answers, setAnswers]     = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
   const [showExp, setShowExp]     = useState(false);
+  const [isNewBest, setIsNewBest] = useState(false);
+  const [best, setBest]           = usePersistentState<number>(QUIZ_BEST_KEY, 0);
 
   const question       = QUESTIONS[currentQ];
   const selectedAnswer = answers[currentQ];
@@ -262,13 +266,32 @@ export default function Quiz() {
 
   const nextQuestion = useCallback(() => {
     if (currentQ < QUESTIONS.length - 1) { setCurrentQ(q => q + 1); setShowExp(false); }
-    else setState('complete');
-  }, [currentQ]);
+    else {
+      setIsNewBest(score > best);
+      setBest(prev => Math.max(prev, score));
+      setState('complete');
+    }
+  }, [currentQ, score, best, setBest]);
 
   const restart = useCallback(() => {
     setState('intro'); setCurrentQ(0);
     setAnswers(Array(QUESTIONS.length).fill(null)); setShowExp(false);
+    setIsNewBest(false);
   }, []);
+
+  // Keyboard play: number keys 1–4 to answer, Enter to advance.
+  useEffect(() => {
+    if (state !== 'playing') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key >= '1' && e.key <= String(question.options.length)) {
+        selectAnswer(Number(e.key) - 1);
+      } else if (e.key === 'Enter' && isAnswered) {
+        nextQuestion();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [state, question, isAnswered, selectAnswer, nextQuestion]);
 
   /* ── Intro ── */
   if (state === 'intro') {
@@ -289,16 +312,22 @@ export default function Quiz() {
           <h2 className="font-cinzel text-2xl sm:text-3xl glow-text mb-2" style={{ color: '#d4af37' }}>
             Kabbalah Study Quiz
           </h2>
-          <p className="font-crimson italic text-mystic-400 text-base mb-8">
+          <p className="font-crimson italic text-mystic-400 text-base mb-6">
             Test your understanding of Baal HaSulam's teachings
           </p>
+
+          {best > 0 && (
+            <p className="font-cinzel text-[11px] tracking-wider text-mystic-400 mb-6">
+              YOUR BEST: <span style={{ color: '#d4af37' }}>{best}/{QUESTIONS.length}</span>
+            </p>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-8 max-w-xs mx-auto">
             {[
               { n: QUESTIONS.length, label: 'Questions' },
               { n: 8,                label: 'Topics'    },
-              { n: '∞',              label: 'Retries'   },
+              { n: best > 0 ? `${best}` : '∞', label: best > 0 ? 'Best' : 'Retries' },
             ].map(({ n, label }) => (
               <div key={label} className="rounded-xl p-4" style={{ background: 'rgba(10,6,24,0.7)', border: '1px solid rgba(91,33,182,0.2)' }}>
                 <p className="font-cinzel text-2xl font-bold glow-text" style={{ color: '#d4af37' }}>{n}</p>
@@ -345,7 +374,13 @@ export default function Quiz() {
           <p className="font-cinzel text-5xl font-bold glow-text my-2" style={{ color: '#d4af37' }}>
             {score}<span className="text-2xl text-mystic-600">/{QUESTIONS.length}</span>
           </p>
-          <p className="font-crimson italic text-gray-500 mb-6">{pct}% correct</p>
+          <p className="font-crimson italic text-gray-500 mb-3">{pct}% correct</p>
+
+          {isNewBest && score > 0 && (
+            <p className="font-cinzel text-[11px] tracking-widest mb-5" style={{ color: '#d4af37' }}>
+              ✦ NEW PERSONAL BEST ✦
+            </p>
+          )}
 
           {/* Result bar */}
           <div className="h-2 rounded-full overflow-hidden mb-6"
@@ -499,6 +534,12 @@ export default function Quiz() {
           </button>
         </div>
       )}
+
+      {/* Keyboard hint */}
+      <p className="text-center font-cinzel text-[10px] tracking-wider text-mystic-700 mt-5">
+        TIP: PRESS <span style={{ color: 'rgba(160,120,240,0.7)' }}>1–{question.options.length}</span> TO ANSWER
+        {isAnswered && <> · <span style={{ color: 'rgba(160,120,240,0.7)' }}>ENTER</span> TO CONTINUE</>}
+      </p>
     </div>
   );
 }
